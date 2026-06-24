@@ -16,6 +16,17 @@ export const documentSchema = z.object({
   content: z.string().max(50000, "Content is too long.")
 });
 
+export const shareDocumentSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address.").toLowerCase(),
+  role: z.enum(["OWNER", "EDITOR", "VIEWER"])
+});
+
+export const collaboratorRoleSchema = z.object({
+  role: z.enum(["OWNER", "EDITOR", "VIEWER"])
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type DocumentInput = z.infer<typeof documentSchema>;
+export type ShareDocumentInput = z.infer<typeof shareDocumentSchema>;
+export type CollaboratorRoleInput = z.infer<typeof collaboratorRoleSchema>;
