@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "documents" ALTER COLUMN "content" DROP DEFAULT,
+ALTER COLUMN "content" SET DATA TYPE TEXT;
