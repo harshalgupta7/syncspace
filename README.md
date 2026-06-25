@@ -60,3 +60,20 @@ Run the initial database migration:
 ```bash
 npm run prisma:migrate
 ```
+
+## Continuous Integration
+
+`.github/workflows/ci.yml` runs on every push to `main` and on every pull
+request. It installs dependencies on Ubuntu with the Node.js version required
+by `package.json` (`engines.node >= 22`), generates the Prisma Client, then
+runs `npm run typecheck` and `npm run build`.
+
+The workflow sets placeholder values for `DATABASE_URL`, `AUTH_SECRET`,
+`AUTH_URL`, and `NEXTAUTH_URL` directly in the workflow file. These are not
+real secrets — none of the app's routes are statically generated, so the
+build never opens a database connection or needs a real signing key. If a
+future change introduces a build step that genuinely requires real
+credentials, store them as GitHub Actions Secrets and reference them with
+`${{ secrets.NAME }}` instead of hardcoding values.
+
+Deployment is handled separately by Vercel and is not part of this workflow.
