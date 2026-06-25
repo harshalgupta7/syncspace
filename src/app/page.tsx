@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { auth } from "@/auth";
 import { CtaSection } from "@/components/landing/cta-section";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { HeroSection } from "@/components/landing/hero-section";
@@ -27,10 +28,13 @@ export const metadata: Metadata = {
   }
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth();
+  const logoHref = session ? "/dashboard" : "/";
+
   return (
     <div className={`dark min-h-screen bg-background text-foreground ${inter.className}`}>
-      <LandingNavbar />
+      <LandingNavbar logoHref={logoHref} />
       <main>
         <HeroSection />
         <FeaturesSection />

@@ -9,13 +9,17 @@ const navLinks = [
   { href: "#workflow", label: "Workflow" }
 ];
 
-export function LandingNavbar() {
+interface LandingNavbarProps {
+  logoHref?: string;
+}
+
+export function LandingNavbar({ logoHref = "/" }: LandingNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link className="flex items-center gap-2 font-semibold text-foreground" href="/">
+        <Link className="flex items-center gap-2 font-semibold text-foreground" href={logoHref}>
           <Sparkles className="text-primary" size={20} />
           SyncSpace
         </Link>
