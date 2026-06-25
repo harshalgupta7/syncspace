@@ -112,11 +112,11 @@ export async function updateDocumentAction(documentId: string, formData: FormDat
 
 export type SyncDocumentResult =
   | { ok: true; updatedAt: number }
-  | { ok: false; error: "unauthenticated" | "forbidden" | "invalid" };
+  | { ok: false; error: "unauthenticated" | "forbidden" | "invalid" | "conflict" };
 
 export async function syncDocumentAction(
   documentId: string,
-  data: { title: string; content: string }
+  data: { title: string; content: string; baseUpdatedAt: number }
 ): Promise<SyncDocumentResult> {
   const session = await auth();
   const userId = session?.user?.id;
@@ -137,13 +137,24 @@ export async function syncDocumentAction(
     return { ok: false, error: "invalid" };
   }
 
-  const updated = await db.document.update({
+  const { count } = await db.document.updateMany({
     where: {
-      id: documentId
+      id: documentId,
+      updatedAt: new Date(data.baseUpdatedAt)
     },
     data: {
       title: parsed.data.title,
       content: parsed.data.content
+    }
+  });
+
+  if (count === 0) {
+    return { ok: false, error: "conflict" };
+  }
+
+  const updated = await db.document.findUniqueOrThrow({
+    where: {
+      id: documentId
     },
     select: {
       updatedAt: true
@@ -261,4 +272,68 @@ export async function removeCollaboratorAction(documentId: string, memberId: str
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/${documentId}`);
   redirect(`/dashboard/${documentId}?removed=1`);
+}
+
+export async function createVersionAction(documentId: string) {
+  const { userId } = await requireDocumentRole(documentId, ["OWNER", "EDITOR"]);
+
+  const document = await db.document.findUnique({
+    where: {
+      id: documentId
+    },
+    select: {
+      title: true,
+      content: true
+    }
+  });
+
+  if (!document) {
+    redirect("/dashboard");
+  }
+
+  await db.documentVersion.create({
+    data: {
+      documentId,
+      title: document.title,
+      content: document.content,
+      createdById: userId
+    }
+  });
+
+  revalidatePath(`/dashboard/${documentId}/versions`);
+  redirect(`/dashboard/${documentId}/versions?created=1`);
+}
+
+export async function restoreVersionAction(documentId: string, versionId: string) {
+  await requireDocumentRole(documentId, ["OWNER", "EDITOR"]);
+
+  const version = await db.documentVersion.findFirst({
+    where: {
+      id: versionId,
+      documentId
+    },
+    select: {
+      title: true,
+      content: true
+    }
+  });
+
+  if (!version) {
+    redirect(`/dashboard/${documentId}/versions?error=not-found`);
+  }
+
+  await db.document.update({
+    where: {
+      id: documentId
+    },
+    data: {
+      title: version.title,
+      content: version.content
+    }
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/${documentId}`);
+  revalidatePath(`/dashboard/${documentId}/versions`);
+  redirect(`/dashboard/${documentId}?restored=1`);
 }

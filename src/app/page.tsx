@@ -1,29 +1,43 @@
-import Link from "next/link";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { CtaSection } from "@/components/landing/cta-section";
+import { FeaturesSection } from "@/components/landing/features-section";
+import { HeroSection } from "@/components/landing/hero-section";
+import { LandingFooter } from "@/components/landing/landing-footer";
+import { LandingNavbar } from "@/components/landing/landing-navbar";
+import { WorkflowSection } from "@/components/landing/workflow-section";
+
+const inter = Inter({ subsets: ["latin"], display: "swap" });
+
+export const metadata: Metadata = {
+  title: "SyncSpace — Local-first collaborative knowledge workspace",
+  description:
+    "SyncSpace is a local-first knowledge workspace. Write offline, sync automatically, and share documents with granular permissions and full version history.",
+  openGraph: {
+    title: "SyncSpace — Local-first collaborative knowledge workspace",
+    description:
+      "Write offline, sync automatically, and share documents with granular permissions and full version history.",
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SyncSpace — Local-first collaborative knowledge workspace",
+    description:
+      "Write offline, sync automatically, and share documents with granular permissions and full version history."
+  }
+};
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen px-6 py-10">
-      <section className="mx-auto flex max-w-5xl flex-col gap-5">
-        <p className="text-sm font-medium text-muted-foreground">SyncSpace MVP</p>
-        <h1 className="text-3xl font-semibold tracking-normal">Local-first knowledge workspace</h1>
-        <p className="max-w-2xl text-muted-foreground">
-          Single-app foundation with Next.js, Prisma, Auth.js, Tailwind, Zustand, TanStack Query, and HTTP-based sync planned for the editor MVP.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-            href="/register"
-          >
-            Create account
-          </Link>
-          <Link
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium transition hover:bg-muted"
-            href="/login"
-          >
-            Sign in
-          </Link>
-        </div>
-      </section>
-    </main>
+    <div className={`dark min-h-screen bg-background text-foreground ${inter.className}`}>
+      <LandingNavbar />
+      <main>
+        <HeroSection />
+        <FeaturesSection />
+        <WorkflowSection />
+        <CtaSection />
+      </main>
+      <LandingFooter />
+    </div>
   );
 }

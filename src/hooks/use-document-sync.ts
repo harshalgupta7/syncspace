@@ -8,7 +8,7 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 const LOCAL_SAVE_DELAY_MS = 300;
 const SYNC_DELAY_MS = 1000;
 
-export type SyncStatus = "saved" | "saving" | "offline";
+export type SyncStatus = "saved" | "saving" | "offline" | "conflict";
 
 interface UseDocumentSyncOptions {
   documentId: string;
@@ -24,6 +24,7 @@ interface UseDocumentSyncResult {
   setContent: (value: string) => void;
   status: SyncStatus;
   isOnline: boolean;
+  lastSyncedAt: number;
 }
 
 export function useDocumentSync({
@@ -35,10 +36,13 @@ export function useDocumentSync({
   const [title, setTitleState] = useState(initialTitle);
   const [content, setContentState] = useState(initialContent);
   const [status, setStatus] = useState<SyncStatus>("saved");
+  const [lastSyncedAt, setLastSyncedAt] = useState(initialUpdatedAt);
   const isOnline = useOnlineStatus();
 
   const dirtyRef = useRef(false);
   const syncingRef = useRef(false);
+  const conflictRef = useRef(false);
+  const baseUpdatedAtRef = useRef(initialUpdatedAt);
   const latestRef = useRef({ title: initialTitle, content: initialContent });
   const stateRef = useRef({ isOnline, documentId });
   const localSaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -47,7 +51,9 @@ export function useDocumentSync({
   stateRef.current = { isOnline, documentId };
 
   const updateStatus = useCallback(() => {
-    if (!stateRef.current.isOnline && dirtyRef.current) {
+    if (conflictRef.current) {
+      setStatus("conflict");
+    } else if (!stateRef.current.isOnline && dirtyRef.current) {
       setStatus("offline");
     } else if (dirtyRef.current || syncingRef.current) {
       setStatus("saving");
@@ -59,7 +65,7 @@ export function useDocumentSync({
   const syncToServer = useCallback(async () => {
     const { isOnline: online, documentId: id } = stateRef.current;
 
-    if (!online || syncingRef.current) {
+    if (!online || syncingRef.current || conflictRef.current) {
       return;
     }
 
@@ -68,14 +74,26 @@ export function useDocumentSync({
     updateStatus();
 
     try {
-      const result = await syncDocumentAction(id, pending);
+      const result = await syncDocumentAction(id, {
+        ...pending,
+        baseUpdatedAt: baseUpdatedAtRef.current
+      });
 
-      if (
-        result.ok &&
-        latestRef.current.title === pending.title &&
-        latestRef.current.content === pending.content
-      ) {
-        dirtyRef.current = false;
+      if (result.ok) {
+        baseUpdatedAtRef.current = result.updatedAt;
+        setLastSyncedAt(result.updatedAt);
+
+        if (
+          latestRef.current.title === pending.title &&
+          latestRef.current.content === pending.content
+        ) {
+          dirtyRef.current = false;
+        }
+      } else if (result.error === "conflict") {
+        // Someone else updated the document since our base version: stop
+        // auto-syncing so we don't clobber their change, but keep the local
+        // draft intact (it is already persisted to IndexedDB).
+        conflictRef.current = true;
       }
     } catch {
       // Network or server failure: keep dirtyRef true so the next edit or
@@ -110,6 +128,10 @@ export function useDocumentSync({
       localSaveTimer.current = setTimeout(() => {
         persistLocal(nextTitle, nextContent);
       }, LOCAL_SAVE_DELAY_MS);
+
+      if (conflictRef.current) {
+        return;
+      }
 
       if (syncTimer.current) {
         clearTimeout(syncTimer.current);
@@ -186,5 +208,5 @@ export function useDocumentSync({
     };
   }, []);
 
-  return { title, content, setTitle, setContent, status, isOnline };
+  return { title, content, setTitle, setContent, status, isOnline, lastSyncedAt };
 }

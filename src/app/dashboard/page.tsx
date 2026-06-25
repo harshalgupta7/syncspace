@@ -1,8 +1,12 @@
-import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { DocumentCard, type DocumentCardData } from "@/components/dashboard/document-card";
+import { EmptyState } from "@/components/dashboard/empty-state";
+import { NewDocumentButton } from "@/components/dashboard/new-document-button";
 import { db } from "@/lib/db";
+import type { DocumentRole } from "@prisma/client";
 import { deleteDocumentAction } from "./actions";
 
 function formatUpdatedAt(date: Date) {
@@ -10,6 +14,16 @@ function formatUpdatedAt(date: Date) {
     dateStyle: "medium",
     timeStyle: "short"
   }).format(date);
+}
+
+function getPreview(content: string) {
+  const collapsed = content.replace(/\s+/g, " ").trim();
+
+  if (!collapsed) {
+    return "No content yet.";
+  }
+
+  return collapsed.length > 140 ? `${collapsed.slice(0, 140)}…` : collapsed;
 }
 
 export default async function DashboardPage() {
@@ -29,6 +43,7 @@ export default async function DashboardPage() {
     select: {
       id: true,
       title: true,
+      content: true,
       updatedAt: true
     }
   });
@@ -53,6 +68,7 @@ export default async function DashboardPage() {
         select: {
           id: true,
           title: true,
+          content: true,
           updatedAt: true,
           owner: {
             select: {
@@ -65,111 +81,73 @@ export default async function DashboardPage() {
     }
   });
 
+  const documents: Array<{ data: DocumentCardData; updatedAt: Date; canDelete: boolean }> = [
+    ...myDocuments.map((document) => ({
+      data: {
+        id: document.id,
+        title: document.title,
+        preview: getPreview(document.content),
+        updatedAtLabel: formatUpdatedAt(document.updatedAt),
+        role: "OWNER" as DocumentRole,
+        ownerLabel: "You"
+      },
+      updatedAt: document.updatedAt,
+      canDelete: true
+    })),
+    ...sharedDocuments.map(({ document, role }) => ({
+      data: {
+        id: document.id,
+        title: document.title,
+        preview: getPreview(document.content),
+        updatedAtLabel: formatUpdatedAt(document.updatedAt),
+        role,
+        ownerLabel: document.owner.name ?? document.owner.email ?? "Unknown owner"
+      },
+      updatedAt: document.updatedAt,
+      canDelete: role === "OWNER"
+    }))
+  ].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+
   return (
-    <main className="min-h-screen bg-muted/30 px-6 py-8">
-      <section className="mx-auto flex max-w-5xl flex-col gap-6">
-        <header className="flex flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="min-h-screen bg-default-50">
+      <header className="border-b border-default-200 bg-white">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 font-semibold text-foreground">
+            <Sparkles className="text-primary" size={20} />
+            SyncSpace
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="hidden text-sm text-default-500 sm:inline">{session.user.email}</span>
+            <SignOutButton />
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">SyncSpace Dashboard</p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-normal">
-              Welcome, {session.user.name ?? "there"}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">{session.user.email}</p>
-          </div>
-          <SignOutButton />
-        </header>
-
-        <section className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold tracking-normal">My Documents</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {myDocuments.length === 1 ? "1 document" : `${myDocuments.length} documents`}
-              </p>
-            </div>
-            <Link
-              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-              href="/dashboard/new"
-            >
-              Create Document
-            </Link>
-          </div>
-
-          {myDocuments.length > 0 ? (
-            <div className="mt-6 divide-y divide-border rounded-md border border-border">
-              {myDocuments.map((document) => (
-                <div
-                  className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
-                  key={document.id}
-                >
-                  <Link className="min-w-0" href={`/dashboard/${document.id}`}>
-                    <h3 className="truncate text-sm font-medium">{document.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Updated {formatUpdatedAt(document.updatedAt)}
-                    </p>
-                  </Link>
-                  <form action={deleteDocumentAction.bind(null, document.id)}>
-                    <button
-                      className="rounded-md border border-destructive/30 px-3 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10"
-                      type="submit"
-                    >
-                      Delete
-                    </button>
-                  </form>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-6 rounded-md border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-              No documents yet. Create your first document to start writing.
-            </p>
-          )}
-        </section>
-
-        <section className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <div>
-            <h2 className="text-lg font-semibold tracking-normal">Shared With Me</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {sharedDocuments.length === 1
-                ? "1 shared document"
-                : `${sharedDocuments.length} shared documents`}
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">My Documents</h1>
+            <p className="mt-2 text-default-500">
+              Everything you own or have been given access to, in one place.
             </p>
           </div>
+          <NewDocumentButton />
+        </div>
 
-          {sharedDocuments.length > 0 ? (
-            <div className="mt-6 divide-y divide-border rounded-md border border-border">
-              {sharedDocuments.map(({ document, role }) => (
-                <div
-                  className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
-                  key={document.id}
-                >
-                  <Link className="min-w-0" href={`/dashboard/${document.id}`}>
-                    <h3 className="truncate text-sm font-medium">{document.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {role} - {document.owner.name ?? document.owner.email} - Updated{" "}
-                      {formatUpdatedAt(document.updatedAt)}
-                    </p>
-                  </Link>
-                  {role === "OWNER" ? (
-                    <form action={deleteDocumentAction.bind(null, document.id)}>
-                      <button
-                        className="rounded-md border border-destructive/30 px-3 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10"
-                        type="submit"
-                      >
-                        Delete
-                      </button>
-                    </form>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-6 rounded-md border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-              Documents shared with you will appear here.
-            </p>
-          )}
-        </section>
-      </section>
-    </main>
+        {documents.length > 0 ? (
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {documents.map(({ data, canDelete }) => (
+              <DocumentCard
+                deleteAction={canDelete ? deleteDocumentAction.bind(null, data.id) : undefined}
+                document={data}
+                key={data.id}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState />
+        )}
+      </main>
+    </div>
   );
 }

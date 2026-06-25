@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { LocalEditor } from "@/components/local-editor";
+import { EditorHeader } from "@/components/editor/editor-header";
 import {
   deleteDocumentAction,
   removeCollaboratorAction,
@@ -17,11 +17,25 @@ type EditDocumentPageProps = {
   searchParams: Promise<{
     error?: string;
     removed?: string;
+    restored?: string;
     roles?: string;
     saved?: string;
     shared?: string;
   }>;
 };
+
+function Banner({ tone, children }: { tone: "danger" | "success"; children: React.ReactNode }) {
+  const toneClass =
+    tone === "danger"
+      ? "border-danger-200 bg-danger-50 text-danger-700"
+      : "border-success-200 bg-success-50 text-success-700";
+
+  return (
+    <p className={`rounded-xl border px-4 py-3 text-sm ${toneClass}`} role={tone === "danger" ? "alert" : "status"}>
+      {children}
+    </p>
+  );
+}
 
 export default async function EditDocumentPage({ params, searchParams }: EditDocumentPageProps) {
   const session = await auth();
@@ -80,6 +94,7 @@ export default async function EditDocumentPage({ params, searchParams }: EditDoc
   const shared = query.shared === "1";
   const rolesUpdated = query.roles === "1";
   const removed = query.removed === "1";
+  const restored = query.restored === "1";
   const accessRole =
     document.ownerId === session.user.id
       ? "OWNER"
@@ -91,170 +106,178 @@ export default async function EditDocumentPage({ params, searchParams }: EditDoc
     notFound();
   }
 
+  const userLabel = session.user.name ?? session.user.email ?? "You";
+  const backHref = "/dashboard";
+  const versionsHref = `/dashboard/${document.id}/versions`;
+
+  const banners = (
+    <>
+      {query.error === "share-invalid" ? (
+        <Banner tone="danger">Enter a valid email address and role.</Banner>
+      ) : null}
+      {query.error === "user-not-found" ? (
+        <Banner tone="danger">No user exists with that email address.</Banner>
+      ) : null}
+      {query.error === "self-share" ? (
+        <Banner tone="danger">You already have owner access to this document.</Banner>
+      ) : null}
+      {shared || rolesUpdated || removed ? <Banner tone="success">Collaborators updated.</Banner> : null}
+      {restored ? <Banner tone="success">Version restored.</Banner> : null}
+    </>
+  );
+
   return (
-    <main className="min-h-screen bg-muted/30 px-6 py-8">
-      <section className="mx-auto flex max-w-3xl flex-col gap-6">
-      <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              {canEdit ? "Edit document" : "View document"} - {accessRole}
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-normal">{document.title}</h1>
-          </div>
-          <Link className="text-sm font-medium underline underline-offset-4" href="/dashboard">
-            Back to dashboard
-          </Link>
-        </div>
-
-        {query.error === "share-invalid" ? (
-          <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            Enter a valid email address and role.
-          </p>
-        ) : null}
-
-        {query.error === "user-not-found" ? (
-          <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            No user exists with that email address.
-          </p>
-        ) : null}
-
-        {query.error === "self-share" ? (
-          <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            You already have owner access to this document.
-          </p>
-        ) : null}
-
-        {shared || rolesUpdated || removed ? (
-          <p className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-            Collaborators updated.
-          </p>
-        ) : null}
-
-        {canEdit ? (
-          <LocalEditor
-            documentId={document.id}
-            initialContent={document.content}
-            initialTitle={document.title}
-            initialUpdatedAt={document.updatedAt.getTime()}
+    <div className="min-h-screen bg-default-50">
+      {canEdit ? (
+        <LocalEditor
+          backHref={backHref}
+          banner={banners}
+          documentId={document.id}
+          initialContent={document.content}
+          initialTitle={document.title}
+          initialUpdatedAt={document.updatedAt.getTime()}
+          role={accessRole}
+          userLabel={userLabel}
+          versionsHref={versionsHref}
+        />
+      ) : (
+        <>
+          <EditorHeader
+            backHref={backHref}
+            role={accessRole}
+            statusSlot={
+              <span className="inline-flex items-center rounded-full bg-default-100 px-2.5 py-1 text-xs font-medium text-default-500">
+                View only
+              </span>
+            }
+            title={document.title}
+            userLabel={userLabel}
+            versionsHref={versionsHref}
           />
-        ) : (
-          <div className="space-y-4">
-            <label className="block text-sm font-medium">
-              Title
-              <p className="mt-2 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm">
-                {document.title}
-              </p>
-            </label>
-
-            <label className="block text-sm font-medium">
-              Content
-              <p className="mt-2 min-h-80 w-full whitespace-pre-wrap rounded-md border border-input bg-muted px-3 py-2 text-sm">
-                {document.content}
-              </p>
-            </label>
-          </div>
-        )}
-
-        {canManage ? (
-          <form action={deleteDocumentAction.bind(null, document.id)} className="mt-4">
-          <button
-            className="rounded-md border border-destructive/30 px-4 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10"
-            type="submit"
-          >
-            Delete Document
-          </button>
-        </form>
-        ) : null}
-      </div>
-
-      {canManage ? (
-        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold tracking-normal">Share Document</h2>
-          <form action={shareDocumentAction.bind(null, document.id)} className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-            <input
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
-              name="email"
-              placeholder="user@example.com"
-              required
-              type="email"
-            />
-            <select
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
-              name="role"
-              defaultValue="VIEWER"
-            >
-              <option value="OWNER">OWNER</option>
-              <option value="EDITOR">EDITOR</option>
-              <option value="VIEWER">VIEWER</option>
-            </select>
-            <button
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-              type="submit"
-            >
-              Invite
-            </button>
-          </form>
-        </div>
-      ) : null}
-
-      {canManage ? (
-        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold tracking-normal">Collaborators</h2>
-          {document.members.length > 0 ? (
-            <div className="mt-4 divide-y divide-border rounded-md border border-border">
-              {document.members.map((member) => (
-                <div
-                  className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
-                  key={member.id}
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {member.user.name ?? member.user.email}
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">{member.user.email}</p>
-                  </div>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <form
-                      action={updateCollaboratorRoleAction.bind(null, document.id, member.id)}
-                      className="flex gap-2"
-                    >
-                      <select
-                        className="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
-                        name="role"
-                        defaultValue={member.role}
-                      >
-                        <option value="OWNER">OWNER</option>
-                        <option value="EDITOR">EDITOR</option>
-                        <option value="VIEWER">VIEWER</option>
-                      </select>
-                      <button
-                        className="rounded-md border border-border px-3 py-2 text-sm font-medium transition hover:bg-muted"
-                        type="submit"
-                      >
-                        Update
-                      </button>
-                    </form>
-                    <form action={removeCollaboratorAction.bind(null, document.id, member.id)}>
-                      <button
-                        className="rounded-md border border-destructive/30 px-3 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10"
-                        type="submit"
-                      >
-                        Remove
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              ))}
+          <main className="px-4 py-8 sm:px-6 sm:py-12">
+            <div className="mx-auto flex max-w-3xl flex-col gap-4">
+              {banners}
+              <div className="rounded-2xl border border-default-200 bg-white p-6 shadow-sm sm:p-10">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                  {document.title}
+                </h1>
+                <p className="mt-6 whitespace-pre-wrap text-base leading-7 text-foreground sm:text-[17px]">
+                  {document.content || <span className="text-default-300">No content yet.</span>}
+                </p>
+              </div>
             </div>
-          ) : (
-            <p className="mt-4 rounded-md border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-              No collaborators yet.
-            </p>
-          )}
-        </div>
+          </main>
+        </>
+      )}
+
+      {canManage ? (
+        <section className="px-4 pb-16 sm:px-6">
+          <div className="mx-auto flex max-w-3xl flex-col gap-6">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">Manage access</h2>
+
+            <div className="rounded-2xl border border-default-200 bg-white p-6 shadow-sm sm:p-8">
+              <h3 className="text-sm font-semibold text-foreground">Share this document</h3>
+              <form
+                action={shareDocumentAction.bind(null, document.id)}
+                className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]"
+              >
+                <input
+                  className="rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
+                  name="email"
+                  placeholder="user@example.com"
+                  required
+                  type="email"
+                />
+                <select
+                  className="rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
+                  name="role"
+                  defaultValue="VIEWER"
+                >
+                  <option value="OWNER">Owner</option>
+                  <option value="EDITOR">Editor</option>
+                  <option value="VIEWER">Viewer</option>
+                </select>
+                <button
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+                  type="submit"
+                >
+                  Invite
+                </button>
+              </form>
+            </div>
+
+            <div className="rounded-2xl border border-default-200 bg-white p-6 shadow-sm sm:p-8">
+              <h3 className="text-sm font-semibold text-foreground">Collaborators</h3>
+              {document.members.length > 0 ? (
+                <div className="mt-4 divide-y divide-default-200 rounded-xl border border-default-200">
+                  {document.members.map((member) => (
+                    <div
+                      className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+                      key={member.id}
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {member.user.name ?? member.user.email}
+                        </p>
+                        <p className="mt-1 text-sm text-default-400">{member.user.email}</p>
+                      </div>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <form
+                          action={updateCollaboratorRoleAction.bind(null, document.id, member.id)}
+                          className="flex gap-2"
+                        >
+                          <select
+                            className="rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
+                            name="role"
+                            defaultValue={member.role}
+                          >
+                            <option value="OWNER">Owner</option>
+                            <option value="EDITOR">Editor</option>
+                            <option value="VIEWER">Viewer</option>
+                          </select>
+                          <button
+                            className="rounded-lg border border-default-200 px-3 py-2 text-sm font-medium text-foreground transition hover:bg-default-100"
+                            type="submit"
+                          >
+                            Update
+                          </button>
+                        </form>
+                        <form action={removeCollaboratorAction.bind(null, document.id, member.id)}>
+                          <button
+                            className="rounded-lg border border-danger-200 px-3 py-2 text-sm font-medium text-danger-600 transition hover:bg-danger-50"
+                            type="submit"
+                          >
+                            Remove
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 rounded-xl border border-dashed border-default-200 px-4 py-8 text-center text-sm text-default-400">
+                  No collaborators yet.
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-danger-200 bg-danger-50/40 p-6 shadow-sm sm:p-8">
+              <h3 className="text-sm font-semibold text-danger-700">Danger zone</h3>
+              <p className="mt-1 text-sm text-danger-600">
+                Deleting this document removes it permanently for you and every collaborator.
+              </p>
+              <form action={deleteDocumentAction.bind(null, document.id)} className="mt-4">
+                <button
+                  className="rounded-lg border border-danger-300 px-4 py-2 text-sm font-medium text-danger-700 transition hover:bg-danger-100"
+                  type="submit"
+                >
+                  Delete document
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
       ) : null}
-      </section>
-    </main>
+    </div>
   );
 }

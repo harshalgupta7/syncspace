@@ -21,8 +21,9 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  ownedDocuments      Document[]       @relation("DocumentOwner")
+  ownedDocuments      Document[]        @relation("DocumentOwner")
   documentMemberships DocumentMember[]
+  createdVersions     DocumentVersion[]
 
   @@map("users")
 }
@@ -35,8 +36,9 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner   User             @relation("DocumentOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members DocumentMember[]
+  owner    User              @relation("DocumentOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members  DocumentMember[]
+  versions DocumentVersion[]
 
   @@index([ownerId])
   @@map("documents")
@@ -56,4 +58,19 @@ model DocumentMember {
   @@unique([documentId, userId])
   @@index([userId])
   @@map("document_members")
+}
+
+model DocumentVersion {
+  id          String   @id @default(cuid())
+  documentId  String
+  title       String
+  content     String
+  createdById String
+  createdAt   DateTime @default(now())
+
+  document  Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdBy User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@map("document_versions")
 }
