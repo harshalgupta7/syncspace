@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
 import { loginAction } from "./actions";
 
 type LoginPageProps = {
@@ -67,12 +68,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             />
           </label>
 
-          <button
-            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-            type="submit"
-          >
-            Sign in
-          </button>
+          <AuthSubmitButton label="Sign in" pendingLabel="Signing in..." />
         </form>
 
         <p className="mt-6 text-sm text-default-500">

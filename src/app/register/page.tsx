@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { registerAction } from "./actions";
+import { RegisterForm } from "@/components/auth/register-form";
 
 type RegisterPageProps = {
   searchParams: Promise<{
@@ -33,48 +33,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
           </p>
         ) : null}
 
-        <form action={registerAction} className="space-y-4">
-          <label className="block text-sm font-medium text-foreground">
-            Name
-            <input
-              autoComplete="name"
-              className="mt-2 w-full rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
-              name="name"
-              required
-              type="text"
-            />
-          </label>
-
-          <label className="block text-sm font-medium text-foreground">
-            Email
-            <input
-              autoComplete="email"
-              className="mt-2 w-full rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
-              name="email"
-              required
-              type="email"
-            />
-          </label>
-
-          <label className="block text-sm font-medium text-foreground">
-            Password
-            <input
-              autoComplete="new-password"
-              className="mt-2 w-full rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
-              minLength={8}
-              name="password"
-              required
-              type="password"
-            />
-          </label>
-
-          <button
-            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-            type="submit"
-          >
-            Create account
-          </button>
-        </form>
+        <RegisterForm />
 
         <p className="mt-6 text-sm text-default-500">
           Already have an account?{" "}
