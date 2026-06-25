@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
+import { SubmitButton } from "@/components/submit-button";
 import { createVersionAction, restoreVersionAction } from "../../actions";
 
 type VersionsPageProps = {
@@ -135,12 +136,12 @@ export default async function VersionsPage({ params, searchParams }: VersionsPag
 
           {canEdit ? (
             <form action={createVersionAction.bind(null, document.id)}>
-              <button
+              <SubmitButton
                 className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-                type="submit"
+                pendingLabel="Saving..."
               >
                 Save current version
-              </button>
+              </SubmitButton>
             </form>
           ) : null}
 
@@ -169,6 +170,7 @@ export default async function VersionsPage({ params, searchParams }: VersionsPag
                         <ConfirmSubmitButton
                           className="rounded-lg border border-default-200 px-3 py-2 text-sm font-medium text-foreground transition hover:bg-default-100"
                           confirmMessage="Restore this version? The document's current title and content will be replaced."
+                          pendingLabel="Restoring..."
                         >
                           Restore
                         </ConfirmSubmitButton>

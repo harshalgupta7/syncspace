@@ -29,9 +29,16 @@ export interface DocumentCardData {
   id: string;
   title: string;
   preview: string;
-  updatedAtLabel: string;
+  updatedAt: number;
   role: DocumentRole;
   ownerLabel: string;
+}
+
+function formatUpdatedAt(updatedAt: number) {
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(updatedAt));
 }
 
 interface DocumentCardProps {
@@ -61,7 +68,7 @@ export function DocumentCard({ document, deleteAction }: DocumentCardProps) {
         <div className="flex min-w-0 flex-col gap-0.5 text-xs text-default-400">
           <span className="flex items-center gap-1.5">
             <Clock size={12} />
-            Updated {document.updatedAtLabel}
+            Updated {formatUpdatedAt(document.updatedAt)}
           </span>
           <span className="truncate">{document.ownerLabel}</span>
         </div>
@@ -70,6 +77,7 @@ export function DocumentCard({ document, deleteAction }: DocumentCardProps) {
             <ConfirmSubmitButton
               className="rounded-md px-2 py-1 text-xs font-medium text-danger transition hover:bg-danger/10"
               confirmMessage="Delete this document? This action cannot be undone."
+              pendingLabel="Deleting..."
             >
               Delete
             </ConfirmSubmitButton>

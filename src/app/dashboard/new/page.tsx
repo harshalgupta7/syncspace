@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { SubmitButton } from "@/components/submit-button";
 import { createDocumentAction } from "../actions";
 
 type NewDocumentPageProps = {
@@ -61,12 +62,12 @@ export default async function NewDocumentPage({ searchParams }: NewDocumentPageP
             />
           </label>
 
-          <button
+          <SubmitButton
             className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-            type="submit"
+            pendingLabel="Creating..."
           >
             Create Document
-          </button>
+          </SubmitButton>
         </form>
       </section>
     </main>

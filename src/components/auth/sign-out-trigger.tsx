@@ -2,11 +2,21 @@
 
 import { Button } from "@heroui/react";
 import { LogOut } from "lucide-react";
+import { useFormStatus } from "react-dom";
 
 export function SignOutTrigger() {
+  const { pending } = useFormStatus();
+
   return (
-    <Button size="sm" startContent={<LogOut size={14} />} type="submit" variant="bordered">
-      Sign out
+    <Button
+      isDisabled={pending}
+      isLoading={pending}
+      size="sm"
+      startContent={pending ? undefined : <LogOut size={14} />}
+      type="submit"
+      variant="bordered"
+    >
+      {pending ? "Signing out..." : "Sign out"}
     </Button>
   );
 }

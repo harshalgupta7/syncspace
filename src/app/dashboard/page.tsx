@@ -10,13 +10,6 @@ import { db } from "@/lib/db";
 import type { DocumentRole } from "@prisma/client";
 import { deleteDocumentAction } from "./actions";
 
-function formatUpdatedAt(date: Date) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(date);
-}
-
 function getPreview(content: string) {
   const collapsed = content.replace(/\s+/g, " ").trim();
 
@@ -88,7 +81,7 @@ export default async function DashboardPage() {
         id: document.id,
         title: document.title,
         preview: getPreview(document.content),
-        updatedAtLabel: formatUpdatedAt(document.updatedAt),
+        updatedAt: document.updatedAt.getTime(),
         role: "OWNER" as DocumentRole,
         ownerLabel: "You"
       },
@@ -100,7 +93,7 @@ export default async function DashboardPage() {
         id: document.id,
         title: document.title,
         preview: getPreview(document.content),
-        updatedAtLabel: formatUpdatedAt(document.updatedAt),
+        updatedAt: document.updatedAt.getTime(),
         role,
         ownerLabel: document.owner.name ?? document.owner.email ?? "Unknown owner"
       },

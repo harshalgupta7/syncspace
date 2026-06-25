@@ -138,6 +138,7 @@ export default async function VersionPreviewPage({ params }: VersionPreviewPageP
               <ConfirmSubmitButton
                 className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
                 confirmMessage="Restore this version? The document's current title and content will be replaced."
+                pendingLabel="Restoring..."
               >
                 Restore this version
               </ConfirmSubmitButton>

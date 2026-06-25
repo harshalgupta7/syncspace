@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { LocalEditor } from "@/components/local-editor";
 import { EditorHeader } from "@/components/editor/editor-header";
+import { SubmitButton } from "@/components/submit-button";
 import {
   deleteDocumentAction,
   removeCollaboratorAction,
@@ -176,7 +177,7 @@ export default async function EditDocumentPage({ params, searchParams }: EditDoc
             <h2 className="text-lg font-semibold tracking-tight text-foreground">Manage access</h2>
 
             <div className="rounded-2xl border border-default-200 bg-white p-6 shadow-sm sm:p-8">
-              <h3 className="text-sm font-semibold text-foreground">Share this document</h3>
+              <h3 className="text-sm font-semibold text-foreground">Share with an existing SyncSpace account</h3>
               <form
                 action={shareDocumentAction.bind(null, document.id)}
                 className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]"
@@ -197,12 +198,12 @@ export default async function EditDocumentPage({ params, searchParams }: EditDoc
                   <option value="EDITOR">Editor</option>
                   <option value="VIEWER">Viewer</option>
                 </select>
-                <button
+                <SubmitButton
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-                  type="submit"
+                  pendingLabel="Inviting..."
                 >
                   Invite
-                </button>
+                </SubmitButton>
               </form>
             </div>
 
@@ -235,20 +236,20 @@ export default async function EditDocumentPage({ params, searchParams }: EditDoc
                             <option value="EDITOR">Editor</option>
                             <option value="VIEWER">Viewer</option>
                           </select>
-                          <button
+                          <SubmitButton
                             className="rounded-lg border border-default-200 px-3 py-2 text-sm font-medium text-foreground transition hover:bg-default-100"
-                            type="submit"
+                            pendingLabel="Updating..."
                           >
                             Update
-                          </button>
+                          </SubmitButton>
                         </form>
                         <form action={removeCollaboratorAction.bind(null, document.id, member.id)}>
-                          <button
+                          <SubmitButton
                             className="rounded-lg border border-danger-200 px-3 py-2 text-sm font-medium text-danger-600 transition hover:bg-danger-50"
-                            type="submit"
+                            pendingLabel="Removing..."
                           >
                             Remove
-                          </button>
+                          </SubmitButton>
                         </form>
                       </div>
                     </div>
@@ -262,17 +263,17 @@ export default async function EditDocumentPage({ params, searchParams }: EditDoc
             </div>
 
             <div className="rounded-2xl border border-danger-200 bg-danger-50/40 p-6 shadow-sm sm:p-8">
-              <h3 className="text-sm font-semibold text-danger-700">Danger zone</h3>
+              {/* <h3 className="text-sm font-semibold text-danger-700">Danger zone</h3> */}
               <p className="mt-1 text-sm text-danger-600">
                 Deleting this document removes it permanently for you and every collaborator.
               </p>
               <form action={deleteDocumentAction.bind(null, document.id)} className="mt-4">
-                <button
+                <SubmitButton
                   className="rounded-lg border border-danger-300 px-4 py-2 text-sm font-medium text-danger-700 transition hover:bg-danger-100"
-                  type="submit"
+                  pendingLabel="Deleting..."
                 >
                   Delete document
-                </button>
+                </SubmitButton>
               </form>
             </div>
           </div>

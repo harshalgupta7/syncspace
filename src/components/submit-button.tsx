@@ -3,19 +3,13 @@
 import { Loader2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
 
-interface ConfirmSubmitButtonProps {
-  confirmMessage: string;
-  className?: string;
+interface SubmitButtonProps {
   children: React.ReactNode;
+  className?: string;
   pendingLabel?: React.ReactNode;
 }
 
-export function ConfirmSubmitButton({
-  confirmMessage,
-  className,
-  children,
-  pendingLabel
-}: ConfirmSubmitButtonProps) {
+export function SubmitButton({ children, className, pendingLabel }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
   return (
@@ -23,11 +17,6 @@ export function ConfirmSubmitButton({
       aria-busy={pending}
       className={`inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-70 ${className ?? ""}`}
       disabled={pending}
-      onClick={(event) => {
-        if (!window.confirm(confirmMessage)) {
-          event.preventDefault();
-        }
-      }}
       type="submit"
     >
       {pending ? <Loader2 aria-hidden="true" className="animate-spin" size={16} /> : null}
