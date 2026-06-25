@@ -2,12 +2,12 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { LocalEditor } from "@/components/local-editor";
 import {
   deleteDocumentAction,
   removeCollaboratorAction,
   shareDocumentAction,
-  updateCollaboratorRoleAction,
-  updateDocumentAction
+  updateCollaboratorRoleAction
 } from "../actions";
 
 type EditDocumentPageProps = {
@@ -51,6 +51,7 @@ export default async function EditDocumentPage({ params, searchParams }: EditDoc
       id: true,
       title: true,
       content: true,
+      updatedAt: true,
       ownerId: true,
       members: {
         orderBy: {
@@ -76,8 +77,6 @@ export default async function EditDocumentPage({ params, searchParams }: EditDoc
   }
 
   const query = await searchParams;
-  const error = query.error === "invalid";
-  const saved = query.saved === "1";
   const shared = query.shared === "1";
   const rolesUpdated = query.roles === "1";
   const removed = query.removed === "1";
@@ -108,12 +107,6 @@ export default async function EditDocumentPage({ params, searchParams }: EditDoc
           </Link>
         </div>
 
-        {error ? (
-          <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            Title is required and content must be under the allowed length.
-          </p>
-        ) : null}
-
         {query.error === "share-invalid" ? (
           <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
             Enter a valid email address and role.
@@ -132,53 +125,36 @@ export default async function EditDocumentPage({ params, searchParams }: EditDoc
           </p>
         ) : null}
 
-        {saved ? (
-          <p className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-            Document saved.
-          </p>
-        ) : null}
-
         {shared || rolesUpdated || removed ? (
           <p className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
             Collaborators updated.
           </p>
         ) : null}
 
-        <form action={updateDocumentAction.bind(null, document.id)} className="space-y-4">
-          <label className="block text-sm font-medium">
-            Title
-            <input
-              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
-              defaultValue={document.title}
-              maxLength={120}
-              name="title"
-              required
-              readOnly={!canEdit}
-              type="text"
-            />
-          </label>
+        {canEdit ? (
+          <LocalEditor
+            documentId={document.id}
+            initialContent={document.content}
+            initialTitle={document.title}
+            initialUpdatedAt={document.updatedAt.getTime()}
+          />
+        ) : (
+          <div className="space-y-4">
+            <label className="block text-sm font-medium">
+              Title
+              <p className="mt-2 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm">
+                {document.title}
+              </p>
+            </label>
 
-          <label className="block text-sm font-medium">
-            Content
-            <textarea
-              className="mt-2 min-h-80 w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
-              defaultValue={document.content}
-              name="content"
-              readOnly={!canEdit}
-            />
-          </label>
-
-          {canEdit ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <button
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-              type="submit"
-            >
-              Save Changes
-            </button>
+            <label className="block text-sm font-medium">
+              Content
+              <p className="mt-2 min-h-80 w-full whitespace-pre-wrap rounded-md border border-input bg-muted px-3 py-2 text-sm">
+                {document.content}
+              </p>
+            </label>
           </div>
-          ) : null}
-        </form>
+        )}
 
         {canManage ? (
           <form action={deleteDocumentAction.bind(null, document.id)} className="mt-4">

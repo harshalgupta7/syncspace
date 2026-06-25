@@ -110,6 +110,52 @@ export async function updateDocumentAction(documentId: string, formData: FormDat
   redirect(`/dashboard/${documentId}?saved=1`);
 }
 
+export type SyncDocumentResult =
+  | { ok: true; updatedAt: number }
+  | { ok: false; error: "unauthenticated" | "forbidden" | "invalid" };
+
+export async function syncDocumentAction(
+  documentId: string,
+  data: { title: string; content: string }
+): Promise<SyncDocumentResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    return { ok: false, error: "unauthenticated" };
+  }
+
+  const role = await getDocumentRole(documentId, userId);
+
+  if (role !== "OWNER" && role !== "EDITOR") {
+    return { ok: false, error: "forbidden" };
+  }
+
+  const parsed = documentSchema.safeParse(data);
+
+  if (!parsed.success) {
+    return { ok: false, error: "invalid" };
+  }
+
+  const updated = await db.document.update({
+    where: {
+      id: documentId
+    },
+    data: {
+      title: parsed.data.title,
+      content: parsed.data.content
+    },
+    select: {
+      updatedAt: true
+    }
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/${documentId}`);
+
+  return { ok: true, updatedAt: updated.updatedAt.getTime() };
+}
+
 export async function deleteDocumentAction(documentId: string) {
   await requireDocumentRole(documentId, ["OWNER"]);
 
