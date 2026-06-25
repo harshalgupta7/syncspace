@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
+import { PasswordInput } from "@/components/auth/password-input";
 import { loginAction } from "./actions";
 
 type LoginPageProps = {
@@ -57,16 +58,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             />
           </label>
 
-          <label className="block text-sm font-medium text-foreground">
-            Password
-            <input
-              autoComplete="current-password"
-              className="mt-2 w-full rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
-              name="password"
-              required
-              type="password"
-            />
-          </label>
+          <PasswordInput autoComplete="current-password" label="Password" name="password" required />
 
           <AuthSubmitButton label="Sign in" pendingLabel="Signing in..." />
         </form>
