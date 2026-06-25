@@ -95,16 +95,16 @@ export default async function VersionPreviewPage({ params }: VersionPreviewPageP
   }
 
   return (
-    <main className="min-h-screen bg-muted/30 px-6 py-8">
+    <main className="min-h-screen bg-default-50 px-6 py-8">
       <section className="mx-auto flex max-w-3xl flex-col gap-6">
-        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+        <div className="rounded-2xl border border-default-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-medium text-default-500">
                 Saved {formatTimestamp(version.createdAt)} by{" "}
                 {version.createdBy.name ?? version.createdBy.email}
               </p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-normal">{version.title}</h1>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{version.title}</h1>
             </div>
             <Link
               className="text-sm font-medium underline underline-offset-4"
@@ -115,16 +115,16 @@ export default async function VersionPreviewPage({ params }: VersionPreviewPageP
           </div>
 
           <div className="space-y-4">
-            <label className="block text-sm font-medium">
+            <label className="block text-sm font-medium text-foreground">
               Title
-              <p className="mt-2 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm">
+              <p className="mt-2 w-full rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm text-foreground">
                 {version.title}
               </p>
             </label>
 
-            <label className="block text-sm font-medium">
+            <label className="block text-sm font-medium text-foreground">
               Content
-              <p className="mt-2 min-h-80 w-full whitespace-pre-wrap rounded-md border border-input bg-muted px-3 py-2 text-sm">
+              <p className="mt-2 min-h-80 w-full whitespace-pre-wrap rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm text-foreground">
                 {version.content}
               </p>
             </label>
@@ -136,7 +136,7 @@ export default async function VersionPreviewPage({ params }: VersionPreviewPageP
               className="mt-4"
             >
               <ConfirmSubmitButton
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
                 confirmMessage="Restore this version? The document's current title and content will be replaced."
               >
                 Restore this version

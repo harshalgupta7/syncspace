@@ -17,44 +17,50 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   const error = params.error ? errorMessages[params.error] : null;
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-6 py-10">
-      <section className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-sm">
+    <main className="flex min-h-screen items-center justify-center bg-default-50 px-6 py-10">
+      <section className="w-full max-w-md rounded-2xl border border-default-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="mb-6">
-          <p className="text-sm font-medium text-muted-foreground">SyncSpace</p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-normal">Create your account</h1>
+          <p className="text-sm font-medium text-default-500">SyncSpace</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Create your account</h1>
         </div>
 
         {error ? (
-          <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <p
+            className="mb-4 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+            role="alert"
+          >
             {error}
           </p>
         ) : null}
 
         <form action={registerAction} className="space-y-4">
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-medium text-foreground">
             Name
             <input
-              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
+              autoComplete="name"
+              className="mt-2 w-full rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
               name="name"
               required
               type="text"
             />
           </label>
 
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-medium text-foreground">
             Email
             <input
-              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
+              autoComplete="email"
+              className="mt-2 w-full rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
               name="email"
               required
               type="email"
             />
           </label>
 
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-medium text-foreground">
             Password
             <input
-              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
+              autoComplete="new-password"
+              className="mt-2 w-full rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
               minLength={8}
               name="password"
               required
@@ -63,14 +69,14 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
           </label>
 
           <button
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
             type="submit"
           >
             Create account
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-muted-foreground">
+        <p className="mt-6 text-sm text-default-500">
           Already have an account?{" "}
           <Link className="font-medium text-foreground underline underline-offset-4" href="/login">
             Sign in

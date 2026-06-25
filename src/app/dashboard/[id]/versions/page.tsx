@@ -99,13 +99,13 @@ export default async function VersionsPage({ params, searchParams }: VersionsPag
   const notFoundError = query.error === "not-found";
 
   return (
-    <main className="min-h-screen bg-muted/30 px-6 py-8">
+    <main className="min-h-screen bg-default-50 px-6 py-8">
       <section className="mx-auto flex max-w-3xl flex-col gap-6">
-        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+        <div className="rounded-2xl border border-default-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Version history</p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-normal">{document.title}</h1>
+              <p className="text-sm font-medium text-default-500">Version history</p>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{document.title}</h1>
             </div>
             <Link
               className="text-sm font-medium underline underline-offset-4"
@@ -116,13 +116,19 @@ export default async function VersionsPage({ params, searchParams }: VersionsPag
           </div>
 
           {created ? (
-            <p className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            <p
+              className="mb-4 rounded-lg border border-success-200 bg-success-50 px-3 py-2 text-sm text-success-700"
+              role="status"
+            >
               Version saved.
             </p>
           ) : null}
 
           {notFoundError ? (
-            <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <p
+              className="mb-4 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+              role="alert"
+            >
               That version could not be found.
             </p>
           ) : null}
@@ -130,7 +136,7 @@ export default async function VersionsPage({ params, searchParams }: VersionsPag
           {canEdit ? (
             <form action={createVersionAction.bind(null, document.id)}>
               <button
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
                 type="submit"
               >
                 Save current version
@@ -139,21 +145,21 @@ export default async function VersionsPage({ params, searchParams }: VersionsPag
           ) : null}
 
           {versions.length > 0 ? (
-            <div className="mt-6 divide-y divide-border rounded-md border border-border">
+            <div className="mt-6 divide-y divide-default-200 rounded-xl border border-default-200">
               {versions.map((version) => (
                 <div
                   className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
                   key={version.id}
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">{formatTimestamp(version.createdAt)}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="text-sm font-medium text-foreground">{formatTimestamp(version.createdAt)}</p>
+                    <p className="mt-1 text-sm text-default-500">
                       By {version.createdBy.name ?? version.createdBy.email}
                     </p>
                   </div>
                   <div className="flex gap-2">
                     <Link
-                      className="rounded-md border border-border px-3 py-2 text-sm font-medium transition hover:bg-muted"
+                      className="rounded-lg border border-default-200 px-3 py-2 text-sm font-medium text-foreground transition hover:bg-default-100"
                       href={`/dashboard/${document.id}/versions/${version.id}`}
                     >
                       Preview
@@ -161,7 +167,7 @@ export default async function VersionsPage({ params, searchParams }: VersionsPag
                     {canEdit ? (
                       <form action={restoreVersionAction.bind(null, document.id, version.id)}>
                         <ConfirmSubmitButton
-                          className="rounded-md border border-border px-3 py-2 text-sm font-medium transition hover:bg-muted"
+                          className="rounded-lg border border-default-200 px-3 py-2 text-sm font-medium text-foreground transition hover:bg-default-100"
                           confirmMessage="Restore this version? The document's current title and content will be replaced."
                         >
                           Restore
@@ -173,7 +179,7 @@ export default async function VersionsPage({ params, searchParams }: VersionsPag
               ))}
             </div>
           ) : (
-            <p className="mt-6 rounded-md border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
+            <p className="mt-6 rounded-xl border border-dashed border-default-200 px-4 py-8 text-center text-sm text-default-400">
               No versions saved yet.
             </p>
           )}

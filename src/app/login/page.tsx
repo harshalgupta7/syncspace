@@ -19,40 +19,48 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const registered = params.registered === "1";
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-6 py-10">
-      <section className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-sm">
+    <main className="flex min-h-screen items-center justify-center bg-default-50 px-6 py-10">
+      <section className="w-full max-w-md rounded-2xl border border-default-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="mb-6">
-          <p className="text-sm font-medium text-muted-foreground">SyncSpace</p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-normal">Sign in</h1>
+          <p className="text-sm font-medium text-default-500">SyncSpace</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Sign in</h1>
         </div>
 
         {registered ? (
-          <p className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <p
+            className="mb-4 rounded-lg border border-success-200 bg-success-50 px-3 py-2 text-sm text-success-700"
+            role="status"
+          >
             Account created. You can sign in now.
           </p>
         ) : null}
 
         {error ? (
-          <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <p
+            className="mb-4 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+            role="alert"
+          >
             {error}
           </p>
         ) : null}
 
         <form action={loginAction} className="space-y-4">
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-medium text-foreground">
             Email
             <input
-              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
+              autoComplete="email"
+              className="mt-2 w-full rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
               name="email"
               required
               type="email"
             />
           </label>
 
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-medium text-foreground">
             Password
             <input
-              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
+              autoComplete="current-password"
+              className="mt-2 w-full rounded-lg border border-default-200 bg-default-50 px-3 py-2 text-sm outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
               name="password"
               required
               type="password"
@@ -60,14 +68,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </label>
 
           <button
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
             type="submit"
           >
             Sign in
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-muted-foreground">
+        <p className="mt-6 text-sm text-default-500">
           New to SyncSpace?{" "}
           <Link className="font-medium text-foreground underline underline-offset-4" href="/register">
             Create an account
